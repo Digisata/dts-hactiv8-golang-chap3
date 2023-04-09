@@ -73,6 +73,7 @@ func UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
+	product.ID = uint(productID)
 	product.UserID = uint(userData["id"].(float64))
 
 	res := db.Model(&product).Where("id=?", productID).Updates(models.Product{Title: product.Title, Description: product.Description})
