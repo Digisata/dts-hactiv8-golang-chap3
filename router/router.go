@@ -21,9 +21,9 @@ func New() *gin.Engine {
 		productRouter.Use(middlewares.Authentication())
 		productRouter.POST("/", controllers.CreateProduct)
 		productRouter.GET("/", controllers.GetProduct)
-		productRouter.PUT("/:productID", middlewares.AdminAuthorization(), controllers.UpdateProduct)
-		productRouter.DELETE("/:productID", middlewares.AdminAuthorization(), controllers.DeleteProduct)
-		// productRouter.PUT("/:productID", middlewares.ProductAuthorization(), controllers.UpdateProduct)
+		productRouter.GET("/:productID", middlewares.ProductAuthorization(), controllers.GetProductById)
+		productRouter.PUT("/:productID", middlewares.ProductAuthorization(), controllers.UpdateProduct)
+		productRouter.DELETE("/:productID", middlewares.ProductAuthorization(), controllers.DeleteProduct)
 	}
 
 	return r

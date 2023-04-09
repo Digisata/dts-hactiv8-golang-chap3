@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -28,22 +29,6 @@ func Authentication() gin.HandlerFunc {
 	}
 }
 
-func AdminAuthorization() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userData := c.MustGet("userData").(jwt.MapClaims)
-
-		if userData["role"] != "admin" {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"message": "Forbidden",
-				"error":   "Only admin can do this action",
-			})
-			return
-		}
-
-		c.Next()
-	}
-}
-
 func ProductAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		db := database.GetDB()
@@ -60,16 +45,15 @@ func ProductAuthorization() gin.HandlerFunc {
 		userID := uint(userData["id"].(float64))
 		product := models.Product{}
 
-		err = db.Select("user_id").First(&product, uint(productID)).Error
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"message": "Unauthorized",
-				"error":   "Failed to find product",
+		res := db.Select("user_id").First(&product, uint(productID))
+		if res.RowsAffected == 0 {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+				"message": fmt.Sprintf("Product with ID %d not found", productID),
 			})
 			return
 		}
 
-		if product.UserID != userID {
+		if userData["role"] != "admin" && product.UserID != userID {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"message": "Forbidden",
 				"error":   "You are not allowed to access this product",
