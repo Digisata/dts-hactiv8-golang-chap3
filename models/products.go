@@ -10,7 +10,7 @@ type Product struct {
 	UserID      uint   `json:"user_id"`
 	Title       string `json:"title" validate:"required-Title is required"`
 	Description string `json:"description" validate:"required-Description is required"`
-	User        *User
+	User        *User  `json:"user"`
 }
 
 func (p *Product) BeforeCreate(tx *gorm.DB) (err error) {

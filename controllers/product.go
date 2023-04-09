@@ -61,9 +61,13 @@ func UpdateProduct(ctx *gin.Context) {
 	db := database.GetDB()
 	userData := ctx.MustGet("userData").(jwt.MapClaims)
 	product := models.Product{}
-	productID, _ := strconv.Atoi(ctx.Param("productID"))
+	productID, err := strconv.Atoi(ctx.Param("productID"))
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 
-	err := ctx.ShouldBindJSON(&product)
+	err = ctx.ShouldBindJSON(&product)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -71,9 +75,11 @@ func UpdateProduct(ctx *gin.Context) {
 
 	product.UserID = uint(userData["id"].(float64))
 
-	err = db.Model(&product).Where("id=?", productID).Updates(models.Product{Title: product.Title, Description: product.Description}).Error
-	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+	res := db.Model(&product).Where("id=?", productID).Updates(models.Product{Title: product.Title, Description: product.Description})
+	if res.RowsAffected == 0 {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"message": fmt.Sprintf("Product with ID %d not found", productID),
+		})
 		return
 	}
 
@@ -83,7 +89,11 @@ func UpdateProduct(ctx *gin.Context) {
 func DeleteProduct(ctx *gin.Context) {
 	db := database.GetDB()
 	product := models.Product{}
-	productID, _ := strconv.Atoi(ctx.Param("productID"))
+	productID, err := strconv.Atoi(ctx.Param("productID"))
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 
 	res := db.Delete(&product, productID)
 	if res.RowsAffected == 0 {
