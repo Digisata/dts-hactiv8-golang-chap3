@@ -16,14 +16,34 @@ func New() *gin.Engine {
 		userRouter.POST("/login", controllers.LoginUser)
 	}
 
-	productRouter := r.Group("products")
+	photoRouter := r.Group("photos")
 	{
-		productRouter.Use(middlewares.Authentication())
-		productRouter.POST("/", controllers.CreateProduct)
-		productRouter.GET("/", controllers.GetProduct)
-		productRouter.GET("/:productID", middlewares.ProductAuthorization(), controllers.GetProductById)
-		productRouter.PUT("/:productID", middlewares.ProductAuthorization(), controllers.UpdateProduct)
-		productRouter.DELETE("/:productID", middlewares.ProductAuthorization(), controllers.DeleteProduct)
+		photoRouter.Use(middlewares.Authentication())
+		photoRouter.POST("/", controllers.CreatePhoto)
+		photoRouter.GET("/", controllers.GetPhoto)
+		photoRouter.GET("/:ID", middlewares.Authorization("Photo"), controllers.GetPhotoById)
+		photoRouter.PUT("/:ID", middlewares.Authorization("Photo"), controllers.UpdatePhoto)
+		photoRouter.DELETE("/:ID", middlewares.Authorization("Photo"), controllers.DeletePhoto)
+	}
+
+	socialMediaRouter := r.Group("social-media")
+	{
+		socialMediaRouter.Use(middlewares.Authentication())
+		socialMediaRouter.POST("/", controllers.CreateSocialMedia)
+		socialMediaRouter.GET("/", controllers.GetSocialMedia)
+		socialMediaRouter.GET("/:ID", middlewares.Authorization("SocialMedia"), controllers.GetSocialMediaById)
+		socialMediaRouter.PUT("/:ID", middlewares.Authorization("SocialMedia"), controllers.UpdateSocialMedia)
+		socialMediaRouter.DELETE("/:ID", middlewares.Authorization("SocialMedia"), controllers.DeleteSocialMedia)
+	}
+
+	commentRouter := r.Group("comments")
+	{
+		commentRouter.Use(middlewares.Authentication())
+		commentRouter.POST("/:photoID", controllers.CreateComment)
+		commentRouter.GET("/", controllers.GetComment)
+		commentRouter.GET("/:ID", middlewares.Authorization("Comment"), controllers.GetCommentById)
+		commentRouter.PUT("/:ID", middlewares.Authorization("Comment"), controllers.UpdateComment)
+		commentRouter.DELETE("/:ID", middlewares.Authorization("Comment"), controllers.DeleteComment)
 	}
 
 	return r

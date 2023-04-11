@@ -8,6 +8,7 @@ import (
 	"github.com/Digisata/dts-hactiv8-golang-chap3/database"
 	"github.com/Digisata/dts-hactiv8-golang-chap3/helpers"
 	"github.com/Digisata/dts-hactiv8-golang-chap3/models"
+	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -29,34 +30,50 @@ func Authentication() gin.HandlerFunc {
 	}
 }
 
-func ProductAuthorization() gin.HandlerFunc {
+func Authorization(table string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		db := database.GetDB()
-		productID, err := strconv.Atoi(c.Param("productID"))
+		ID, err := strconv.Atoi(c.Param("ID"))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": "Unauthorized",
-				"error":   "Invalid product ID data type",
+				"error":   "Invalid ID data type",
 			})
 			return
 		}
 
 		userData := c.MustGet("userData").(jwt.MapClaims)
 		userID := uint(userData["id"].(float64))
-		product := models.Product{}
 
-		res := db.Select("user_id").First(&product, uint(productID))
+		var res *gorm.DB
+		var domainUserID uint
+
+		switch table {
+		case "Photo":
+			domain := models.Photo{}
+			res = db.Select("user_id").First(&domain, uint(ID))
+			domainUserID = domain.UserID
+		case "SocialMedia":
+			domain := models.SocialMedia{}
+			res = db.Select("user_id").First(&domain, uint(ID))
+			domainUserID = domain.UserID
+		case "Comment":
+			domain := models.Comment{}
+			res = db.Select("user_id").First(&domain, uint(ID))
+			domainUserID = domain.UserID
+		}
+
 		if res.RowsAffected == 0 {
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-				"message": fmt.Sprintf("Product with ID %d not found", productID),
+				"message": fmt.Sprintf("%s with ID %d not found", table, ID),
 			})
 			return
 		}
 
-		if userData["role"] != "admin" && product.UserID != userID {
+		if domainUserID != userID {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"message": "Forbidden",
-				"error":   "You are not allowed to access this product",
+				"error":   fmt.Sprintf("You are not allowed to access this %s", table),
 			})
 			return
 		}

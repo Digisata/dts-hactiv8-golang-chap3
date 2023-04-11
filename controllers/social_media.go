@@ -7,117 +7,108 @@ import (
 
 	"github.com/Digisata/dts-hactiv8-golang-chap3/database"
 	"github.com/Digisata/dts-hactiv8-golang-chap3/models"
-	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
 
-func CreateProduct(ctx *gin.Context) {
+func CreateSocialMedia(ctx *gin.Context) {
 	db := database.GetDB()
 	userData := ctx.MustGet("userData").(jwt.MapClaims)
-	product := models.Product{}
+	socialMedia := models.SocialMedia{}
 
-	err := ctx.ShouldBindJSON(&product)
+	err := ctx.ShouldBindJSON(&socialMedia)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	product.UserID = uint(userData["id"].(float64))
+	socialMedia.UserID = uint(userData["id"].(float64))
 
-	err = db.Create(&product).Error
+	err = db.Create(&socialMedia).Error
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, product)
+	ctx.JSON(http.StatusCreated, socialMedia)
 }
 
-func GetProduct(ctx *gin.Context) {
+func GetSocialMedia(ctx *gin.Context) {
 	db := database.GetDB()
 	userData := ctx.MustGet("userData").(jwt.MapClaims)
-	products := []models.Product{}
-	var result *gorm.DB
-
-	if userData["role"] == "admin" {
-		result = db.Find(&products)
-	}
-
-	if userData["role"] == "user" {
-		result = db.Where("user_id = ?", uint(userData["id"].(float64))).Find(&products)
-	}
-
+	socialMedias := []models.SocialMedia{}
+	
+	result := db.Where("user_id = ?", uint(userData["id"].(float64))).Find(&socialMedias)
 	if result.Error != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, result.Error)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, products)
+	ctx.JSON(http.StatusOK, socialMedias)
 }
 
-func GetProductById(ctx *gin.Context) {
+func GetSocialMediaById(ctx *gin.Context) {
 	db := database.GetDB()
-	productID, err := strconv.Atoi(ctx.Param("productID"))
+	ID, err := strconv.Atoi(ctx.Param("ID"))
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	product := models.Product{}
-	err = db.First(&product, productID).Error
+	socialMedia := models.SocialMedia{}
+	err = db.First(&socialMedia, ID).Error
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, product)
+	ctx.JSON(http.StatusOK, socialMedia)
 }
 
-func UpdateProduct(ctx *gin.Context) {
+func UpdateSocialMedia(ctx *gin.Context) {
 	db := database.GetDB()
 	userData := ctx.MustGet("userData").(jwt.MapClaims)
-	product := models.Product{}
-	productID, err := strconv.Atoi(ctx.Param("productID"))
+	socialMedia := models.SocialMedia{}
+	ID, err := strconv.Atoi(ctx.Param("ID"))
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	err = ctx.ShouldBindJSON(&product)
+	err = ctx.ShouldBindJSON(&socialMedia)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	product.ID = uint(productID)
-	product.UserID = uint(userData["id"].(float64))
+	socialMedia.ID = uint(ID)
+	socialMedia.UserID = uint(userData["id"].(float64))
 
-	res := db.Model(&product).Where("id=?", productID).Updates(models.Product{Title: product.Title, Description: product.Description})
+	res := db.Model(&socialMedia).Where("id=?", ID).Updates(models.SocialMedia{Name: socialMedia.Name, SocialMediaURL: socialMedia.SocialMediaURL})
 	if res.RowsAffected == 0 {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"message": fmt.Sprintf("Product with ID %d not found", productID),
+			"message": fmt.Sprintf("SocialMedia with ID %d not found", ID),
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, product)
+	ctx.JSON(http.StatusOK, socialMedia)
 }
 
-func DeleteProduct(ctx *gin.Context) {
+func DeleteSocialMedia(ctx *gin.Context) {
 	db := database.GetDB()
-	product := models.Product{}
-	productID, err := strconv.Atoi(ctx.Param("productID"))
+	socialMedia := models.SocialMedia{}
+	ID, err := strconv.Atoi(ctx.Param("ID"))
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	res := db.Delete(&product, productID)
+	res := db.Delete(&socialMedia, ID)
 	if res.RowsAffected == 0 {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"message": fmt.Sprintf("Product with ID %d not found", productID),
+			"message": fmt.Sprintf("SocialMedia with ID %d not found", ID),
 		})
 		return
 	}

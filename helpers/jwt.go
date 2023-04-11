@@ -10,11 +10,10 @@ import (
 
 const secretKey = "t3StS3cR3t!"
 
-func GenerateToken(id uint, email, role string) (token string, err error) {
+func GenerateToken(id uint, email string) (token string, err error) {
 	claims := jwt.MapClaims{
 		"id":    id,
 		"email": email,
-		"role": role,
 	}
 
 	parseToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -28,24 +27,24 @@ func VerifyToken(ctx *gin.Context) (interface{}, error) {
 	bearer := strings.HasPrefix(headerToken, "Bearer")
 
 	if !bearer {
-		return nil, errors.New("Bearer token not found")
+		return nil, errors.New("bearer token not found")
 	}
 
 	stringToken := headerToken[7:]
 
 	token, err := jwt.Parse(stringToken, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("Failed to get sign token")
+			return nil, errors.New("failed to get sign token")
 		}
 
 		return []byte(secretKey), nil
 	})
 	if err != nil {
-		return nil, errors.New("Invalid token")
+		return nil, errors.New("invalid token")
 	}
 
 	if _, ok := token.Claims.(jwt.MapClaims); !ok {
-		return nil, errors.New("Failed to parse claims")
+		return nil, errors.New("failed to parse claims")
 	}
 
 	return token.Claims.(jwt.MapClaims), nil

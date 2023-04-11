@@ -16,10 +16,7 @@ const (
 	DEBUG_MODE = true
 )
 
-var (
-	db  *gorm.DB
-	err error
-)
+var db *gorm.DB
 
 func StartDB() {
 	err := godotenv.Load()
@@ -40,7 +37,7 @@ func StartDB() {
 		panic(err)
 	}
 
-	db.Debug().AutoMigrate(models.User{}, models.Product{})
+	db.Debug().AutoMigrate(&models.User{}, &models.SocialMedia{}, &models.Photo{}, &models.Comment{})
 }
 
 func GetDB() *gorm.DB {

@@ -32,9 +32,9 @@ func RegisterUser(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, gin.H{
 		"id":         user.ID,
-		"first_name": user.FirstName,
+		"username": user.Username,
 		"email":      user.Email,
-		"role":       user.Role,
+		"age":      user.Age,
 	})
 }
 
@@ -57,11 +57,11 @@ func LoginUser(ctx *gin.Context) {
 	}
 
 	if !helpers.PasswordValid(user.Password, password) {
-		ctx.AbortWithError(http.StatusBadRequest, errors.New("Invalid password"))
+		ctx.AbortWithError(http.StatusBadRequest, errors.New("invalid password"))
 		return
 	}
 
-	token, err := helpers.GenerateToken(user.ID, user.Email, user.Role)
+	token, err := helpers.GenerateToken(user.ID, user.Email)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
