@@ -17,23 +17,26 @@ func RegisterUser(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
 	err = db.Create(&user).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal server error",
-			"error":   err.Error(),
+			"status":  http.StatusText(http.StatusInternalServerError),
+			"message": err.Error(),
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
-		"id":         user.ID,
+		"id":       user.ID,
 		"username": user.Username,
-		"email":      user.Email,
+		"email":    user.Email,
 		"age":      user.Age,
 	})
 }
@@ -44,7 +47,10 @@ func LoginUser(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -52,18 +58,27 @@ func LoginUser(ctx *gin.Context) {
 
 	err = db.Where("email = ?", user.Email).Take(&user).Error
 	if err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": errors.New("invalid username or password"),
+		})
 		return
 	}
 
 	if !helpers.PasswordValid(user.Password, password) {
-		ctx.AbortWithError(http.StatusBadRequest, errors.New("invalid password"))
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": errors.New("invalid username or password"),
+		})
 		return
 	}
 
 	token, err := helpers.GenerateToken(user.ID, user.Email)
 	if err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusText(http.StatusInternalServerError),
+			"message": err.Error(),
+		})
 		return
 	}
 

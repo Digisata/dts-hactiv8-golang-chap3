@@ -21,9 +21,10 @@ func New() *gin.Engine {
 		photoRouter.Use(middlewares.Authentication())
 		photoRouter.POST("/", controllers.CreatePhoto)
 		photoRouter.GET("/", controllers.GetPhoto)
-		photoRouter.GET("/:ID", middlewares.Authorization("Photo"), controllers.GetPhotoById)
+		photoRouter.GET("/:ID", controllers.GetPhotoById)
 		photoRouter.PUT("/:ID", middlewares.Authorization("Photo"), controllers.UpdatePhoto)
 		photoRouter.DELETE("/:ID", middlewares.Authorization("Photo"), controllers.DeletePhoto)
+		photoRouter.GET("/:ID/comments", middlewares.Authorization("Photo"), controllers.GetComment)
 	}
 
 	socialMediaRouter := r.Group("social-media")
@@ -31,7 +32,7 @@ func New() *gin.Engine {
 		socialMediaRouter.Use(middlewares.Authentication())
 		socialMediaRouter.POST("/", controllers.CreateSocialMedia)
 		socialMediaRouter.GET("/", controllers.GetSocialMedia)
-		socialMediaRouter.GET("/:ID", middlewares.Authorization("SocialMedia"), controllers.GetSocialMediaById)
+		socialMediaRouter.GET("/:ID", controllers.GetSocialMediaById)
 		socialMediaRouter.PUT("/:ID", middlewares.Authorization("SocialMedia"), controllers.UpdateSocialMedia)
 		socialMediaRouter.DELETE("/:ID", middlewares.Authorization("SocialMedia"), controllers.DeleteSocialMedia)
 	}
@@ -40,8 +41,8 @@ func New() *gin.Engine {
 	{
 		commentRouter.Use(middlewares.Authentication())
 		commentRouter.POST("/:photoID", controllers.CreateComment)
-		commentRouter.GET("/", controllers.GetComment)
-		commentRouter.GET("/:ID", middlewares.Authorization("Comment"), controllers.GetCommentById)
+		// commentRouter.GET("/", controllers.GetComment)
+		commentRouter.GET("/:ID", controllers.GetCommentById)
 		commentRouter.PUT("/:ID", middlewares.Authorization("Comment"), controllers.UpdateComment)
 		commentRouter.DELETE("/:ID", middlewares.Authorization("Comment"), controllers.DeleteComment)
 	}

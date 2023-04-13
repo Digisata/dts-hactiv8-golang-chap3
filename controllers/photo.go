@@ -19,7 +19,10 @@ func CreatePhoto(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&photo)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -27,7 +30,10 @@ func CreatePhoto(ctx *gin.Context) {
 
 	err = db.Create(&photo).Error
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusText(http.StatusInternalServerError),
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -41,7 +47,10 @@ func GetPhoto(ctx *gin.Context) {
 
 	result := db.Where("user_id = ?", uint(userData["id"].(float64))).Find(&photos)
 	if result.Error != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, result.Error)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusText(http.StatusInternalServerError),
+			"message": result.Error,
+		})
 		return
 	}
 
@@ -52,14 +61,20 @@ func GetPhotoById(ctx *gin.Context) {
 	db := database.GetDB()
 	ID, err := strconv.Atoi(ctx.Param("ID"))
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
 	photo := models.Photo{}
 	err = db.First(&photo, ID).Error
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusText(http.StatusInternalServerError),
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -72,13 +87,19 @@ func UpdatePhoto(ctx *gin.Context) {
 	photo := models.Photo{}
 	ID, err := strconv.Atoi(ctx.Param("ID"))
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
 	err = ctx.ShouldBindJSON(&photo)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -87,7 +108,8 @@ func UpdatePhoto(ctx *gin.Context) {
 
 	res := db.Model(&photo).Where("id=?", ID).Updates(models.Photo{Title: photo.Title, Caption: photo.Caption, PhotoURL: photo.PhotoURL})
 	if res.RowsAffected == 0 {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusText(http.StatusNotFound),
 			"message": fmt.Sprintf("Photo with ID %d not found", ID),
 		})
 		return
@@ -101,13 +123,17 @@ func DeletePhoto(ctx *gin.Context) {
 	photo := models.Photo{}
 	ID, err := strconv.Atoi(ctx.Param("ID"))
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
 	res := db.Delete(&photo, ID)
 	if res.RowsAffected == 0 {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusText(http.StatusNotFound),
 			"message": fmt.Sprintf("Photo with ID %d not found", ID),
 		})
 		return

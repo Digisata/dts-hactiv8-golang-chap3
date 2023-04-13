@@ -7,9 +7,9 @@ import (
 
 type Photo struct {
 	gorm.Model
-	Title    string `json:"title" validate:"required-Title is required"`
-	Caption  string `json:"caption" validate:"required-Caption is required"`
-	PhotoURL string `json:"photo_url" validate:"required-Photo URL is required"`
+	Title    string `gorm:"not null" json:"title" valid:"required~Title is required"`
+	Caption  string `json:"caption" valid:"optional"`
+	PhotoURL string `gorm:"not null" json:"photo_url" valid:"required~Photo URL is required"`
 	UserID   uint   `json:"user_id"`
 	User     *User  `json:"user"`
 }

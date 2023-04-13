@@ -19,7 +19,10 @@ func CreateSocialMedia(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&socialMedia)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -27,7 +30,10 @@ func CreateSocialMedia(ctx *gin.Context) {
 
 	err = db.Create(&socialMedia).Error
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusText(http.StatusInternalServerError),
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -38,10 +44,13 @@ func GetSocialMedia(ctx *gin.Context) {
 	db := database.GetDB()
 	userData := ctx.MustGet("userData").(jwt.MapClaims)
 	socialMedias := []models.SocialMedia{}
-	
+
 	result := db.Where("user_id = ?", uint(userData["id"].(float64))).Find(&socialMedias)
 	if result.Error != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, result.Error)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusText(http.StatusInternalServerError),
+			"message": result.Error,
+		})
 		return
 	}
 
@@ -52,14 +61,20 @@ func GetSocialMediaById(ctx *gin.Context) {
 	db := database.GetDB()
 	ID, err := strconv.Atoi(ctx.Param("ID"))
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
 	socialMedia := models.SocialMedia{}
 	err = db.First(&socialMedia, ID).Error
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusText(http.StatusInternalServerError),
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -72,13 +87,19 @@ func UpdateSocialMedia(ctx *gin.Context) {
 	socialMedia := models.SocialMedia{}
 	ID, err := strconv.Atoi(ctx.Param("ID"))
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
 	err = ctx.ShouldBindJSON(&socialMedia)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -87,7 +108,8 @@ func UpdateSocialMedia(ctx *gin.Context) {
 
 	res := db.Model(&socialMedia).Where("id=?", ID).Updates(models.SocialMedia{Name: socialMedia.Name, SocialMediaURL: socialMedia.SocialMediaURL})
 	if res.RowsAffected == 0 {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusText(http.StatusNotFound),
 			"message": fmt.Sprintf("SocialMedia with ID %d not found", ID),
 		})
 		return
@@ -101,13 +123,17 @@ func DeleteSocialMedia(ctx *gin.Context) {
 	socialMedia := models.SocialMedia{}
 	ID, err := strconv.Atoi(ctx.Param("ID"))
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusText(http.StatusBadRequest),
+			"message": err.Error(),
+		})
 		return
 	}
 
 	res := db.Delete(&socialMedia, ID)
 	if res.RowsAffected == 0 {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusText(http.StatusNotFound),
 			"message": fmt.Sprintf("SocialMedia with ID %d not found", ID),
 		})
 		return

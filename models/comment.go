@@ -7,7 +7,7 @@ import (
 
 type Comment struct {
 	gorm.Model
-	Message string `json:"message" validate:"required-Message is required"`
+	Message string `gorm:"not null" json:"message" valid:"required~Message is required"`
 	UserID  uint   `json:"user_id"`
 	User    *User  `json:"user"`
 	PhotoID uint   `json:"photo_id"`
